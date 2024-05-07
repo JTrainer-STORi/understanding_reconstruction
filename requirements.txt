@@ -1,0 +1,4 @@
+neural-tangents
+jax
+flax
+git+https://github.com/matthias-wright/flaxmodels.git
