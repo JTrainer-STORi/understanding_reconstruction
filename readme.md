@@ -28,7 +28,7 @@ Everything else is a utility file.
 
 # Reconstructing MNIST example
 
-We have visualizations of the attack on MNIST and CIFAR-10 in `usage_example.ipynb`. We outline basic usage, attacking a 2048-width model trained on binary MNIST
+We have visualizations of the attack on MNIST and CIFAR-10 in `basic_example.ipynb`. We outline basic usage, attacking a 2048-width model trained on binary MNIST
 ```
 #training a 2048 width model on binary mnist
 python3 train_model.py --n_epochs 1e6 --output_dir ./example_mnist/ --lr 4e-5 --dataset_name mnist_odd_even --train_set_size 200 --model_width 2048
