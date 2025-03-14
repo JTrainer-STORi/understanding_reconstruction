@@ -390,7 +390,7 @@ class ResNet(nn.Module):
 
         # Classifier
         x = jnp.mean(x, axis=(1, 2))
-        if use_lora:
+        if self.use_lora:
             x = LoRALinear(base_layer=nn.Dense(features=num_classes,
                                               kernel_init=self.kernel_init if self.param_dict is None else lambda *_ : jnp.array(self.param_dict['fc']['weight']), 
                                               bias_init=self.bias_init if self.param_dict is None else lambda *_ : jnp.array(self.param_dict['fc']['bias']),
