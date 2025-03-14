@@ -155,9 +155,10 @@ def main(seed = 0, dataset_name = 'mnist_odd_even', n_epochs = 1e6, lr = 1e-3, m
 
             iter_checkpoints.pop(0)
         
-        if i % 10000 == 0:
-            print(f'iter: {i}, loss: {loss}')
-            (val, _), grad = jax.value_and_grad(training_utils.get_training_loss_l2, has_aux = True)(model_train_state.params, train_images, train_labels, model_train_state, has_bn = has_bn, batch_stats = model_train_state.batch_stats, xent = xent)
+        #if i % 10000 == 0:
+        print(f'iter: {i}, loss: {loss}')
+        (val, _), grad = jax.value_and_grad(training_utils.get_training_loss_l2, has_aux = True)(model_train_state.params, train_images, train_labels, model_train_state, has_bn = has_bn, batch_stats = model_train_state.batch_stats, xent = xent)
+        print(grad)
 
 
         if loss < 1e-10:
