@@ -39,6 +39,7 @@ import pickle
 def filter_lora_params(params):
     """Returns a mask for params, where only LoRA parameters are trainable."""
     def mask_fn(param_name, _):
+        print(param_name)
         return "lora_A" in param_name or "lora_B" in param_name  # Train only LoRA parameters
     return jax.tree.map_with_path(lambda path, _: mask_fn(jax.tree_util.keystr(path, simple=True, separator='/'), _), params)
 
