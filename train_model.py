@@ -116,7 +116,7 @@ def main(seed = 0, dataset_name = 'mnist_odd_even', n_epochs = 1e6, lr = 1e-3, m
         opt = tx.masked(opt, trainable_mask)
 
     trainable_params = jax.tree_util.tree_leaves(jax.tree_map(lambda x: x if x is not None else None, trainable_mask))
-    print("Trainable Parameters:", [name for name, is_trainable in zip(params.keys(), trainable_params) if is_trainable])
+    print("Trainable Parameters:", [name for name, is_trainable in zip(init_params.keys(), trainable_params) if is_trainable])
 
     model_train_state = training_utils.TrainStateWithBatchStats.create(apply_fn = net_apply, params = init_params, tx = opt, batch_stats = init_batch_stats, train_it = 0, base_params = None)
 
