@@ -289,6 +289,7 @@ class ResNet(nn.Module):
     bias_init: functools.partial=nn.initializers.zeros
     ckpt_dir: str=None
     dtype: str='float32'
+    use_lora: bool = False
 
     def setup(self):
         self.param_dict = None
@@ -297,7 +298,7 @@ class ResNet(nn.Module):
             self.param_dict = h5py.File(ckpt_file, 'r')
 
     @nn.compact
-    def __call__(self, x, train=True, use_softplus = False, beta = 1., use_lora = False):
+    def __call__(self, x, train=True, use_softplus = False, beta = 1.):
         """
         Args:
             x (tensor): Input tensor of shape [N, H, W, 3]. Images must be in range [0, 1].
