@@ -311,7 +311,7 @@ def do_training_step_recon(train_state, labels, init_params, final_params, l2 = 
     return new_state, (loss, acc)
 
 
-@functools.partial(jax.jit, static_argnames=('has_bn', 'train', 'update_ema', 'use_base_params',  'use_softplus', 'batch_size', 'both_kernels'))
+@functools.partial(jax.jit, static_argnames=('has_bn', 'train', 'update_ema', 'use_base_params',  'use_softplus', 'both_kernels'))
 def do_training_step_recon_batched(train_state, labels, init_params, final_params, l2 = 0., has_bn = False, train = False, update_ema = False, ema_decay = 0.995, use_base_params = False, beta = 1., use_softplus = True, img_min = 0, img_max = 1, batch_size = -1, g_state = None, key = jax.random.PRNGKey(0), both_kernels = False, batch_stats = None, high_freq_coef = 1):
 
     # get_training_loss_l2(train_state.params, images, labels, train_state, l2 = l2, train = train, has_bn = has_bn, batch_stats = batch_stats, use_base_params = use_base_params)
