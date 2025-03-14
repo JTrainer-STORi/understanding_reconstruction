@@ -41,7 +41,7 @@ def filter_lora_params(params):
     def mask_fn(param_name, _):
         print(param_name)
         return "lora_A" in param_name or "lora_B" in param_name  # Train only LoRA parameters
-    return jax.tree.map_with_path(lambda path, _: mask_fn("/".join(str(path)), _), params)
+    return jax.tree.map_with_path(lambda path, _: mask_fn(path, _), params)
 
 def get_noise_mask(key, shape, p):
     return (jax.random.uniform(key, shape = shape) > p).astype(jnp.float32)
