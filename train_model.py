@@ -77,7 +77,7 @@ def main(seed = 0, dataset_name = 'mnist_odd_even', n_epochs = 1e6, lr = 1e-3, m
     
     print(train_labels.shape)
     if pretrained:
-        model = models.ResNet18(output_dim = train_labels.shape[-1])
+        model = models.ResNet18(output_dim = train_labels.shape[-1], use_lora = use_lora)
         has_bn = True
     else:
         model = models.MLP(width = [model_width, model_width], ntk_param = ntk_param, no_bias = no_bias, output_dim = train_labels.shape[-1])
