@@ -6,3 +6,4 @@ example_mnist/
 *.png
 fine_tune/
 __pycache__/
+.venv/

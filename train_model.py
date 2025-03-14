@@ -39,8 +39,6 @@ import pickle
 def filter_lora_params(params):
     """Returns a mask for params, where only LoRA parameters are trainable."""
     def mask_fn(param_name, _):
-        print(param_name)
-        print("lora_A" in param_name or "lora_B" in param_name)
         return "lora_A" in param_name or "lora_B" in param_name  # Train only LoRA parameters
     return jax.tree.map_with_path(lambda path, _: mask_fn(jax.tree_util.keystr(path, simple=True, separator='/'), _), params)
 
@@ -51,6 +49,7 @@ def mask_noise(images, noise, noise_mask):
     return images * noise_mask + noise * (1. - noise_mask)
 
 def main(seed = 0, dataset_name = 'mnist_odd_even', n_epochs = 1e6, lr = 1e-3, model_width = 1000, train_set_size = 100, output_dir = None, linearize = False, loss_checkpoints = [], ntk_param = False, no_bias = False, iter_checkpoints = [], distilled_data_dir = None, use_dp = False, clip_grad_norm = 2, grad_noise_ratio = 0.01, use_adam = False, second_seed = None, noise_corrupt_ratio = 0.0, pretrained = False, xent = False, momentum = 0.9, use_lora = False):
+
     if pretrained:
         jax.config.update("jax_enable_x64", True)
 
@@ -116,13 +115,6 @@ def main(seed = 0, dataset_name = 'mnist_odd_even', n_epochs = 1e6, lr = 1e-3, m
     if use_lora:
         trainable_mask = filter_lora_params(init_params)
         opt = tx.masked(opt, trainable_mask)
-
-        trainable_params = jax.tree_util.tree_leaves(jax.tree.map(lambda x: x if x is not None else None, trainable_mask))
-        print(init_params)
-        print(init_params.keys())
-        print(init_params.tree_flatten_with_keys())
-        print([zip(init_params.keys(), trainable_params)])
-        print("Trainable Parameters:", [name for name, is_trainable in zip(init_params.keys(), trainable_params) if is_trainable])
 
     model_train_state = training_utils.TrainStateWithBatchStats.create(apply_fn = net_apply, params = init_params, tx = opt, batch_stats = init_batch_stats, train_it = 0, base_params = None)
 
