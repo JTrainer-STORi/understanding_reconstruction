@@ -115,12 +115,12 @@ def main(seed = 0, dataset_name = 'mnist_odd_even', n_epochs = 1e6, lr = 1e-3, m
 
     if use_lora:
         trainable_mask = filter_lora_params(init_params)
-        print(trainable_mask)
         opt = tx.masked(opt, trainable_mask)
 
-
         trainable_params = jax.tree_util.tree_leaves(jax.tree.map(lambda x: x if x is not None else None, trainable_mask))
+        print(init_params.keys())
         print(trainable_params)
+        print(zip(init_params.keys(), trainable_params))
         print("Trainable Parameters:", [name for name, is_trainable in zip(init_params.keys(), trainable_params) if is_trainable])
 
     model_train_state = training_utils.TrainStateWithBatchStats.create(apply_fn = net_apply, params = init_params, tx = opt, batch_stats = init_batch_stats, train_it = 0, base_params = None)
