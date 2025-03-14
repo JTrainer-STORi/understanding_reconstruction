@@ -1,0 +1,8 @@
+data/
+example_cifar/
+example_mnist/
+*.ipynb
+*.pth
+*.png
+fine_tune/
+__pycache__/

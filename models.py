@@ -83,14 +83,12 @@ class MLP(nn.Module):
         
         return x
 
-
-
 class ResNet18(nn.Module):
     output_dim: int = 1
 
     @nn.compact
-    def __call__(self, x, train = True, use_softplus = False, beta = 1., return_feat = False):
-        x = ResNet(output = 'activations', pretrained = 'imagenet', architecture = 'resnet18', normalize = False)(x, train = train, use_softplus = use_softplus, beta = beta)['fc']
+    def __call__(self, x, train = True, use_softplus = False, beta = 1., return_feat = False, use_lora = False):
+        x = ResNet(output = 'activations', pretrained = 'imagenet', architecture = 'resnet18', normalize = False)(x, train = train, use_softplus = use_softplus, beta = beta, use_lora = use_lora)['fc']
         
         feat = x
 

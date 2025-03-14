@@ -20,6 +20,21 @@ LAYERS = {'resnet18': [2, 2, 2, 2],
           'resnet101': [3, 4, 23, 3],
           'resnet152': [3, 8, 36, 3]}
 
+class LoRALinear(nn.Module):
+    """ LoRA layer that wraps an existing nn.Dense (linear) layer. """
+    base_layer: nn.Dense  # Pre-existing linear layer
+    rank: int = 4  # LoRA rank
+
+    def setup(self):
+        # LoRA low-rank matrices
+        self.lora_A = nn.Dense(features=self.rank, use_bias=False)  # Down-projection (d → r)
+        self.lora_B = nn.Dense(features=self.base_layer.features, use_bias=False)  # Up-projection (r → d)
+
+    def __call__(self, x):
+        original_output = self.base_layer(x)  # Frozen layer output
+        lora_update = self.lora_B(self.lora_A(x))  # LoRA adaptation
+        return original_output + lora_update  # Adjusted output
+
 
 class SoftRelu(nn.Module):
     @nn.compact
@@ -282,7 +297,7 @@ class ResNet(nn.Module):
             self.param_dict = h5py.File(ckpt_file, 'r')
 
     @nn.compact
-    def __call__(self, x, train=True, use_softplus = False, beta = 1.):
+    def __call__(self, x, train=True, use_softplus = False, beta = 1., use_lora = False):
         """
         Args:
             x (tensor): Input tensor of shape [N, H, W, 3]. Images must be in range [0, 1].
@@ -374,11 +389,17 @@ class ResNet(nn.Module):
 
         # Classifier
         x = jnp.mean(x, axis=(1, 2))
-        x = nn.Dense(features=num_classes,
-                     kernel_init=self.kernel_init if self.param_dict is None else lambda *_ : jnp.array(self.param_dict['fc']['weight']), 
-                     bias_init=self.bias_init if self.param_dict is None else lambda *_ : jnp.array(self.param_dict['fc']['bias']),
-                     dtype=self.dtype)(x)
-        act['fc'] = x
+        if use_lora:
+            x = LoRALinear(base_layer=nn.Dense(features=num_classes,
+                                              kernel_init=self.kernel_init if self.param_dict is None else lambda *_ : jnp.array(self.param_dict['fc']['weight']), 
+                                              bias_init=self.bias_init if self.param_dict is None else lambda *_ : jnp.array(self.param_dict['fc']['bias']),
+                                              dtype=self.dtype))(x)
+        else:
+            x = nn.Dense(features=num_classes,
+                        kernel_init=self.kernel_init if self.param_dict is None else lambda *_ : jnp.array(self.param_dict['fc']['weight']), 
+                        bias_init=self.bias_init if self.param_dict is None else lambda *_ : jnp.array(self.param_dict['fc']['bias']),
+                        dtype=self.dtype)(x)
+            act['fc'] = x
         
         if self.output == 'softmax':
             return nn.softmax(x)
