@@ -15,7 +15,7 @@ import flax.linen as nn
 import optax as tx
 import neural_tangents.stax as stax
 
-
+from typing import Dict
 
 import os
 
@@ -36,11 +36,31 @@ import models
 import training_utils
 import pickle
 
+def print_tree(d, depth, print_value=False):
+    for k in d.keys():
+        if isinstance(d[k], Dict):
+            print('  ' * depth, k)
+            print_tree(d[k], depth + 1, print_value)
+        else:
+            if print_value:
+                print('  ' * depth, k, d[k])
+            else:
+                print('  ' * depth, k)
+
 def filter_lora_params(params):
     """Returns a mask for params, where only LoRA parameters are trainable."""
     def mask_fn(param_name, _):
         return "lora_A" in param_name or "lora_B" in param_name  # Train only LoRA parameters
     return jax.tree.map_with_path(lambda path, _: mask_fn(jax.tree_util.keystr(path, simple=True, separator='/'), _), params)
+
+def label_lora_params(params):
+    """Returns a pytree with binary labels for params indicating whether they are LoRA parameters."""
+    def label_fn(param_name, _):
+        if "lora_A" in param_name or "lora_B" in param_name:  # Label only LoRA parameters
+            return "lora"
+        else:
+            return "frozen"
+    return jax.tree.map_with_path(lambda path, _: label_fn(jax.tree_util.keystr(path, simple=True, separator='/'), _), params)
 
 def get_noise_mask(key, shape, p):
     return (jax.random.uniform(key, shape = shape) > p).astype(jnp.float32)
@@ -113,8 +133,10 @@ def main(seed = 0, dataset_name = 'mnist_odd_even', n_epochs = 1e6, lr = 1e-3, m
         opt = tx.dpsgd(lr, clip_grad_norm, grad_noise_ratio, seed, momentum = 0.9)
 
     if use_lora:
-        trainable_mask = filter_lora_params(init_params)
-        opt = tx.masked(opt, trainable_mask)
+        opt = tx.multi_transform(
+            {'lora': opt, 'frozen': tx.set_to_zero()},
+            label_lora_params(init_params)
+        )
 
     model_train_state = training_utils.TrainStateWithBatchStats.create(apply_fn = net_apply, params = init_params, tx = opt, batch_stats = init_batch_stats, train_it = 0, base_params = None)
 
@@ -158,7 +180,6 @@ def main(seed = 0, dataset_name = 'mnist_odd_even', n_epochs = 1e6, lr = 1e-3, m
         #if i % 10000 == 0:
         print(f'iter: {i}, loss: {loss}')
         (val, _), grad = jax.value_and_grad(training_utils.get_training_loss_l2, has_aux = True)(model_train_state.params, train_images, train_labels, model_train_state, has_bn = has_bn, batch_stats = model_train_state.batch_stats, xent = xent)
-        print(grad)
 
 
         if loss < 1e-10:
