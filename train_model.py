@@ -68,7 +68,7 @@ def get_noise_mask(key, shape, p):
 def mask_noise(images, noise, noise_mask):
     return images * noise_mask + noise * (1. - noise_mask)
 
-def main(seed = 0, dataset_name = 'mnist_odd_even', n_epochs = 1e6, lr = 1e-3, model_width = 1000, train_set_size = 100, output_dir = None, linearize = False, loss_checkpoints = [], ntk_param = False, no_bias = False, iter_checkpoints = [], distilled_data_dir = None, use_dp = False, clip_grad_norm = 2, grad_noise_ratio = 0.01, use_adam = False, second_seed = None, noise_corrupt_ratio = 0.0, pretrained = False, xent = False, momentum = 0.9, use_lora = False):
+def main(seed = 0, dataset_name = 'mnist_odd_even', n_epochs = 1e6, lr = 1e-3, model_width = 1000, train_set_size = 100, output_dir = None, linearize = False, loss_checkpoints = [], ntk_param = False, no_bias = False, iter_checkpoints = [], distilled_data_dir = None, use_dp = False, clip_grad_norm = 2, grad_noise_ratio = 0.01, use_adam = False, second_seed = None, noise_corrupt_ratio = 0.0, pretrained = False, xent = False, momentum = 0.9, use_lora = False, lora_rank = 4):
 
     if pretrained:
         jax.config.update("jax_enable_x64", True)
@@ -98,7 +98,7 @@ def main(seed = 0, dataset_name = 'mnist_odd_even', n_epochs = 1e6, lr = 1e-3, m
     
     print(train_labels.shape)
     if pretrained:
-        model = models.ResNet18(output_dim = train_labels.shape[-1], use_lora = use_lora)
+        model = models.ResNet18(output_dim = train_labels.shape[-1], use_lora = use_lora, lora_rank = lora_rank)
         has_bn = True
     else:
         model = models.MLP(width = [model_width, model_width], ntk_param = ntk_param, no_bias = no_bias, output_dim = train_labels.shape[-1])

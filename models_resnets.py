@@ -290,6 +290,7 @@ class ResNet(nn.Module):
     ckpt_dir: str=None
     dtype: str='float32'
     use_lora: bool = False
+    lora_rank: int = 4
 
     def setup(self):
         self.param_dict = None
@@ -394,7 +395,7 @@ class ResNet(nn.Module):
             x = LoRALinear(base_layer=nn.Dense(features=num_classes,
                                               kernel_init=self.kernel_init if self.param_dict is None else lambda *_ : jnp.array(self.param_dict['fc']['weight']), 
                                               bias_init=self.bias_init if self.param_dict is None else lambda *_ : jnp.array(self.param_dict['fc']['bias']),
-                                              dtype=self.dtype))(x)
+                                              dtype=self.dtype), rank=self.lora_rank)(x)
         else:
             x = nn.Dense(features=num_classes,
                         kernel_init=self.kernel_init if self.param_dict is None else lambda *_ : jnp.array(self.param_dict['fc']['weight']), 

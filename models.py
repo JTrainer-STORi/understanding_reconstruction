@@ -86,10 +86,11 @@ class MLP(nn.Module):
 class ResNet18(nn.Module):
     output_dim: int = 1
     use_lora: bool = False
+    lora_rank: int = 4
 
     @nn.compact
     def __call__(self, x, train = True, use_softplus = False, beta = 1., return_feat = False):
-        x = ResNet(output = 'activations', pretrained = 'imagenet', architecture = 'resnet18', normalize = False, use_lora = self.use_lora)(x, train = train, use_softplus = use_softplus, beta = beta)['fc']
+        x = ResNet(output = 'activations', pretrained = 'imagenet', architecture = 'resnet18', normalize = False, use_lora = self.use_lora, lora_rank=self.lora_rank)(x, train = train, use_softplus = use_softplus, beta = beta)['fc']
         
         feat = x
 
